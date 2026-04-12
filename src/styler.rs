@@ -213,12 +213,18 @@ fn has_class(attrs: &HashMap<String, String>, class_name: &str) -> bool {
 
 fn base_style_with_inheritance(parent: &ComputedStyle) -> ComputedStyle {
     let mut style = ComputedStyle::default();
+
+    // 1. Inherit Typography and Color
     style.color = parent.color;
     style.font_size = parent.font_size;
     style.font_weight = parent.font_weight;
     style.font_style = parent.font_style;
     style.font_family = parent.font_family.clone();
     style.line_height = parent.line_height;
+
+    // 2. Inherit Alignment
+    style.text_align = parent.text_align;
+    style.vertical_align = parent.vertical_align;
     style
 }
 
