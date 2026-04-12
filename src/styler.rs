@@ -638,14 +638,36 @@ fn parse_html_font_size(value: &str) -> Option<f32> {
 
 fn parse_font_size(value: &str, parent_font_size: f32) -> Option<f32> {
     let value = value.trim().to_ascii_lowercase();
+    if value.is_empty() {
+        return None;
+    }
+
     match value.as_str() {
+        "xx-small" => Some(9.0),
+        "x-small" => Some(10.0),
         "small" => Some(13.0),
         "medium" => Some(16.0),
         "large" => Some(18.0),
-        _ if value.ends_with("px") => value.trim_end_matches("px").parse().ok(),
-        _ if value.ends_with("em") => {
-            let factor: f32 = value.trim_end_matches("em").parse().ok()?;
+        "x-large" => Some(24.0),
+        "xx-large" => Some(32.0),
+        _ if value.ends_with("px") => value.trim_end_matches("px").trim().parse().ok(),
+        _ if value.ends_with("pt") => {
+            // 1pt is roughly 1.33px
+            let pt: f32 = value.trim_end_matches("pt").trim().parse().ok()?;
+            Some(pt * 1.333)
+        }
+        _ if value.ends_with("em") || value.ends_with("rem") => {
+            let factor: f32 = value
+                .trim_end_matches("rem")
+                .trim_end_matches("em")
+                .trim()
+                .parse()
+                .ok()?;
             Some(parent_font_size * factor)
+        }
+        _ if value.ends_with('%') => {
+            let pct: f32 = value.trim_end_matches('%').trim().parse().ok()?;
+            Some(parent_font_size * (pct / 100.0))
         }
         _ => value.parse::<f32>().ok(),
     }
