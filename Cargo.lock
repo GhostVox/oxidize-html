@@ -3598,14 +3598,30 @@ dependencies = [
 ]
 
 [[package]]
-name = "oxidize-html_engine"
+name = "oxidize-demo"
+version = "0.1.0"
+dependencies = [
+ "gpui",
+ "oxidize-html-engine",
+ "oxidize-render",
+]
+
+[[package]]
+name = "oxidize-html-engine"
 version = "0.1.0"
 dependencies = [
  "base64",
- "gpui",
  "html5ever",
  "image",
  "markup5ever_rcdom",
+]
+
+[[package]]
+name = "oxidize-render"
+version = "0.1.0"
+dependencies = [
+ "gpui",
+ "oxidize-html-engine",
 ]
 
 [[package]]

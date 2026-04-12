@@ -2,7 +2,12 @@
 <module type="EMPTY_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/oxidize-demo/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/oxidize-html-engine/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/oxidize-render/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/oxidize-html-engine/target" />
+      <excludeFolder url="file://$MODULE_DIR$/oxidize-render/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

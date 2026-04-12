@@ -1,20 +1,11 @@
-[package]
-name = "oxidize-html_engine"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+    "oxidize-demo",
+    "oxidize-html-engine",
+    "oxidize-render",
+]
+resolver = "2"
 
-[features]
-default = []
-gpui-demo = ["dep:gpui"]
+[workspace.dependencies]
+gpui = { version = "0.2.2" }
 
-[dependencies]
-base64 = "0.22"
-html5ever = "0.27"
-markup5ever_rcdom = "0.3"
-image = "0.25"
-gpui = { version = "0.2.2", optional = true }
-
-[[bin]]
-name = "gpui_demo"
-path = "src/bin/gpui_demo.rs"
-required-features = ["gpui-demo"]
