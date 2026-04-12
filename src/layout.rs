@@ -61,85 +61,12 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
             cursor_y += height;
             children.push(child_layout);
         }
-    }
-    else {
+    } else {
+        let (new_children, new_cursor_y) =
+            layout_children(node, content_x, content_width, cursor_y);
 
-        // STANDARD BLOCK/INLINE LOGIC
-        let line_start_x = content_x;
-        let line_limit_x = line_start_x + content_width.max(1.0);
-        let mut inline_cursor_x = line_start_x;
-        let mut inline_line_height: f32 = 0.0;
-        let mut in_inline_run = false;
-
-        for child in &node.children {
-            if is_inline_node(child) {
-                in_inline_run = true;
-
-                // FIXED <br> LOGIC:
-                if child.tag.as_deref() == Some("br") {
-                    // 1. End the current line and advance the cursor
-                    cursor_y += inline_line_height.max(node.style.line_height);
-
-                    // 2. RESET the line height so the NEXT line starts fresh
-                    inline_line_height = 0.0;
-                    inline_cursor_x = line_start_x;
-
-                    // 3. Add the <br> to the children list so it shows in debug
-                    let (_, _, br_layout) = layout_inline_node(
-                        child,
-                        line_start_x,
-                        cursor_y - node.style.line_height,
-                        1.0,
-                    );
-                    children.push(br_layout);
-                    continue;
-                }
-
-                let (mut cw, mut ch, mut cl) = layout_inline_node(
-                    child,
-                    inline_cursor_x,
-                    cursor_y,
-                    (line_limit_x - line_start_x).max(1.0),
-                );
-
-                // Handle wrapping
-                if inline_cursor_x > line_start_x && inline_cursor_x + cw > line_limit_x {
-                    cursor_y += inline_line_height;
-                    inline_cursor_x = line_start_x;
-                    inline_line_height = 0.0;
-                    let (nw, nh, nl) = layout_inline_node(
-                        child,
-                        inline_cursor_x,
-                        cursor_y,
-                        (line_limit_x - line_start_x).max(1.0),
-                    );
-                    cw = nw;
-                    ch = nh;
-                    cl = nl;
-                }
-
-                inline_cursor_x += cw;
-                inline_line_height = inline_line_height.max(ch);
-                children.push(cl);
-            } else {
-                if in_inline_run {
-                    cursor_y += inline_line_height;
-                    inline_cursor_x = line_start_x;
-                    inline_line_height = 0.0;
-                    in_inline_run = false;
-                }
-
-                let (height, child_layout) =
-                    layout_node(child, content_x, cursor_y, content_width.max(1.0));
-                if height > 0.0 || child_layout.tag.is_some() {
-                    cursor_y += height;
-                    children.push(child_layout);
-                }
-            }
-        }
-        if in_inline_run {
-            cursor_y += inline_line_height;
-        }
+        children.extend(new_children);
+        cursor_y = new_cursor_y;
     }
 
     let mut own_content = NodeContent::Box;
@@ -215,6 +142,87 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
     };
 
     (space_consumed, out)
+}
+
+fn layout_children(
+    node: &StyledNode,
+    content_x: f32,
+    content_width: f32,
+    mut cursor_y: f32,
+) -> (Vec<LayoutNode>, f32) {
+    // STANDARD BLOCK/INLINE LOGIC
+    let line_start_x = content_x;
+    let line_limit_x = line_start_x + content_width.max(1.0);
+    let mut inline_cursor_x = line_start_x;
+    let mut inline_line_height: f32 = 0.0;
+    let mut in_inline_run = false;
+    let mut children = Vec::new();
+    for child in &node.children {
+        if is_inline_node(child) {
+            in_inline_run = true;
+
+            // FIXED <br> LOGIC:
+            if child.tag.as_deref() == Some("br") {
+                // 1. End the current line and advance the cursor
+                cursor_y += inline_line_height.max(node.style.line_height);
+
+                // 2. RESET the line height so the NEXT line starts fresh
+                inline_line_height = 0.0;
+                inline_cursor_x = line_start_x;
+
+                // 3. Add the <br> to the children list so it shows in debug
+                let (_, _, br_layout) =
+                    layout_inline_node(child, line_start_x, cursor_y - node.style.line_height, 1.0);
+                children.push(br_layout);
+                continue;
+            }
+
+            let (mut cw, mut ch, mut cl) = layout_inline_node(
+                child,
+                inline_cursor_x,
+                cursor_y,
+                (line_limit_x - line_start_x).max(1.0),
+            );
+
+            // Handle wrapping
+            if inline_cursor_x > line_start_x && inline_cursor_x + cw > line_limit_x {
+                cursor_y += inline_line_height;
+                inline_cursor_x = line_start_x;
+                inline_line_height = 0.0;
+                let (nw, nh, nl) = layout_inline_node(
+                    child,
+                    inline_cursor_x,
+                    cursor_y,
+                    (line_limit_x - line_start_x).max(1.0),
+                );
+                cw = nw;
+                ch = nh;
+                cl = nl;
+            }
+
+            inline_cursor_x += cw;
+            inline_line_height = inline_line_height.max(ch);
+            children.push(cl);
+        } else {
+            if in_inline_run {
+                cursor_y += inline_line_height;
+                inline_cursor_x = line_start_x;
+                inline_line_height = 0.0;
+                in_inline_run = false;
+            }
+
+            let (height, child_layout) =
+                layout_node(child, content_x, cursor_y, content_width.max(1.0));
+            if height > 0.0 || child_layout.tag.is_some() {
+                cursor_y += height;
+                children.push(child_layout);
+            }
+        }
+    }
+    if in_inline_run {
+        cursor_y += inline_line_height;
+    }
+    (children, cursor_y)
 }
 
 fn layout_inline_node(
