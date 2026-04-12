@@ -106,18 +106,37 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
         let line_start_x = content_x;
         let line_limit_x = line_start_x + content_width.max(1.0);
         let mut inline_cursor_x = line_start_x;
-        let mut inline_line_height = 0.0;
+        let mut inline_line_height: f32 = 0.0;
         let mut in_inline_run = false;
 
         for child in &node.children {
             if is_inline_node(child) {
                 in_inline_run = true;
-                let mut attempt_x = inline_cursor_x;
-                let mut attempt_y = cursor_y;
-                let (mut child_width, mut child_height, mut child_layout) = layout_inline_node(
+
+                // FIXED <br> LOGIC:
+                if child.tag.as_deref() == Some("br") {
+                    // 1. End the current line and advance the cursor
+                    cursor_y += inline_line_height.max(node.style.line_height);
+
+                    // 2. RESET the line height so the NEXT line starts fresh
+                    inline_line_height = 0.0;
+                    inline_cursor_x = line_start_x;
+
+                    // 3. Add the <br> to the children list so it shows in debug
+                    let (_, _, br_layout) = layout_inline_node(
+                        child,
+                        line_start_x,
+                        cursor_y - node.style.line_height,
+                        1.0,
+                    );
+                    children.push(br_layout);
+                    continue;
+                }
+
+                let (mut cw, mut ch, mut cl) = layout_inline_node(
                     child,
-                    attempt_x,
-                    attempt_y,
+                    inline_cursor_x,
+                    cursor_y,
                     (line_limit_x - line_start_x).max(1.0),
                 );
 
