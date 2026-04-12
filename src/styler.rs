@@ -322,38 +322,45 @@ fn apply_tag_defaults(tag: &str, style: &mut ComputedStyle, parent_font_size: f3
             style.margin.top = parent_font_size * 0.83;
             style.margin.bottom = parent_font_size * 0.83;
         }
-        "p" => {
+
+        "p" | "ul" => {
             style.display = Display::Block;
-            style.text_align = TextAlign::Left;
+            style.margin = Edges::all(0.0);
             style.margin.top = parent_font_size;
             style.margin.bottom = parent_font_size;
+            if tag == "ul" {
+                style.padding.left = 40.0;
+            }
         }
-        "ul" => {
-            style.display = Display::Block;
-            style.text_align = TextAlign::Left;
-            style.margin.top = parent_font_size;
-            style.margin.bottom = parent_font_size;
-            style.padding.left = 40.0;
-        }
+
         "li" => {
             style.display = Display::ListItem;
-            style.text_align = TextAlign::Left;
         }
+
         "hr" => {
             style.display = Display::Block;
-            style.text_align = TextAlign::Left;
+            style.margin = Edges::all(0.0);
             style.margin.top = parent_font_size * 0.5;
             style.margin.bottom = parent_font_size * 0.5;
-            let border = BorderSpec {
+            style.border.top = BorderSpec {
                 width: 1.0,
-                color: parse_color("#cccccc").unwrap_or(Rgba::rgb(204, 204, 204)),
+                color: Rgba::rgb(204, 204, 204),
             };
-            style.border.top = border;
         }
+
         "img" => style.display = Display::InlineBlock,
+        "small" => {
+            style.display = Display::Inline;
+            style.font_size = parent_font_size * 0.875;
+        }
+        "sub" | "sup" => {
+            style.display = Display::Inline;
+            style.font_size = parent_font_size * 0.75;
+        }
         _ => {}
     }
 }
+
 
 fn apply_attribute_fallbacks(
     tag: &str,
