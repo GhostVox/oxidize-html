@@ -62,6 +62,7 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
             children.push(child_layout);
         }
     } else {
+        // Standard block/inline logic
         let (new_children, new_cursor_y) =
             layout_children(node, content_x, content_width, cursor_y);
 
@@ -107,7 +108,7 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
     }
 
     let children_height = (cursor_y - (top + padding.top)).max(0.0);
-    // Combine children heights with the node's own intrinsic height (text, etc)
+    // Combine children heights with the node's own intrinsic height (text, etc.)
     let content_height = children_height.max(intrinsic_height);
 
     let box_height = match node.style.height {
@@ -411,12 +412,11 @@ fn layout_table_row(
             SizeValue::Px(px) => px.max(1.0),
             SizeValue::Percent(pct) => (content_width * (pct / 100.0)).max(1.0),
             SizeValue::Auto => {
-                // Robust Email Column Strategy:
                 if cell_count == 3 {
-                    let weights = [0.65, 0.10, 0.25]; // Item / Qty / Price
+                    let weights = [0.65, 0.10, 0.25];
                     (content_width * weights[i]).max(1.0)
                 } else if cell_count == 2 {
-                    let weights = [0.75, 0.25]; // Label / Total
+                    let weights = [0.75, 0.25];
                     (content_width * weights[i]).max(1.0)
                 } else {
                     (content_width / cell_count as f32).max(1.0)
@@ -424,7 +424,11 @@ fn layout_table_row(
             }
         };
 
-        let (height, child_layout) = layout_node(child, cursor_x, cursor_y, child_parent_width);
+        let mut resolved_child = (*child).clone();
+        resolved_child.style.width = SizeValue::Px(child_parent_width);
+
+        let (height, child_layout) =
+            layout_node(&resolved_child, cursor_x, cursor_y, child_parent_width);
         cursor_x += child_layout.rect.width.max(0.0);
         row_height = row_height.max(height.max(child_layout.rect.height));
         children.push(child_layout);
@@ -565,8 +569,8 @@ fn debug_layout_tree(node: &LayoutNode, indent: usize) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{HtmlRenderer, LayoutNode, NodeContent};
-
+    use super::*;
+    use crate::{ComputedStyle, HtmlRenderer, LayoutNode, NodeContent};
     fn find_first_text(node: &LayoutNode) -> Option<&crate::TextLayout> {
         if let NodeContent::Text(layout) = &node.content {
             return Some(layout);
@@ -694,5 +698,346 @@ mod tests {
         for child in &node.children {
             collect_cells(child, out);
         }
+    }
+
+    #[test]
+    fn explicit_width_and_height() {
+        let (w, h) = resolve_image_size(
+            SizeValue::Px(200.0),
+            SizeValue::Px(100.0),
+            500.0,
+            Some((400.0, 300.0)),
+        );
+        assert_eq!(w, 200.0);
+        assert_eq!(h, 100.0);
+    }
+
+    #[test]
+    fn explicit_width_scales_height_from_intrinsic() {
+        // 200px widely, intrinsic is 400x300 (4:3), so height should be 150
+        let (w, h) = resolve_image_size(
+            SizeValue::Px(200.0),
+            SizeValue::Auto,
+            500.0,
+            Some((400.0, 300.0)),
+        );
+        assert_eq!(w, 200.0);
+        assert_eq!(h, 150.0);
+    }
+
+    #[test]
+    fn explicit_height_scales_width_from_intrinsic() {
+        // 150px tall, intrinsic is 400x300 (4:3), so width should be 200
+        let (w, h) = resolve_image_size(
+            SizeValue::Auto,
+            SizeValue::Px(150.0),
+            500.0,
+            Some((400.0, 300.0)),
+        );
+        assert_eq!(w, 200.0);
+        assert_eq!(h, 150.0);
+    }
+
+    #[test]
+    fn auto_size_uses_intrinsic_clamped_to_max_width() {
+        // intrinsic is 400x300, max_width is 200, so w=200, h=150
+        let (w, h) = resolve_image_size(
+            SizeValue::Auto,
+            SizeValue::Auto,
+            200.0,
+            Some((400.0, 300.0)),
+        );
+        assert_eq!(w, 200.0);
+        assert_eq!(h, 150.0);
+    }
+
+    #[test]
+    fn auto_size_intrinsic_smaller_than_max_width() {
+        // intrinsic 100x50, max_width 500, so w=100, h=50
+        let (w, h) =
+            resolve_image_size(SizeValue::Auto, SizeValue::Auto, 500.0, Some((100.0, 50.0)));
+        assert_eq!(w, 100.0);
+        assert_eq!(h, 50.0);
+    }
+
+    #[test]
+    fn explicit_width_no_intrinsic_uses_fallback_height() {
+        let (w, h) = resolve_image_size(SizeValue::Px(300.0), SizeValue::Auto, 500.0, None);
+        assert_eq!(w, 300.0);
+        assert_eq!(h, 24.0);
+    }
+
+    #[test]
+    fn explicit_height_no_intrinsic_uses_clamped_max_width() {
+        let (w, h) = resolve_image_size(SizeValue::Auto, SizeValue::Px(80.0), 500.0, None);
+        assert_eq!(w, 320.0); // min(500, 320)
+        assert_eq!(h, 80.0);
+    }
+
+    #[test]
+    fn no_size_no_intrinsic_uses_fallbacks() {
+        let (w, h) = resolve_image_size(SizeValue::Auto, SizeValue::Auto, 500.0, None);
+        assert_eq!(w, 320.0);
+        assert_eq!(h, 180.0);
+    }
+
+    #[test]
+    fn percent_width_resolved_against_max_width() {
+        // 50% of 400 = 200, height auto with intrinsic 400x200 -> h=100
+        let (w, h) = resolve_image_size(
+            SizeValue::Percent(50.0),
+            SizeValue::Auto,
+            400.0,
+            Some((400.0, 200.0)),
+        );
+        assert_eq!(w, 200.0);
+        assert_eq!(h, 100.0);
+    }
+
+    #[test]
+    fn min_size_clamp_prevents_zero() {
+        let (w, h) = resolve_image_size(SizeValue::Px(0.0), SizeValue::Px(0.0), 500.0, None);
+        assert_eq!(w, 1.0);
+        assert_eq!(h, 1.0);
+    }
+    fn make_cell(display: Display, width: SizeValue) -> StyledNode {
+        StyledNode {
+            node_id: 0,
+            tag: Some("td".to_string()),
+            attrs: Default::default(),
+            text: None,
+            style: ComputedStyle {
+                display,
+                width,
+                ..ComputedStyle::default()
+            },
+            children: Vec::new(),
+        }
+    }
+
+    fn make_row(cells: Vec<StyledNode>) -> StyledNode {
+        StyledNode {
+            node_id: 0,
+            tag: Some("tr".to_string()),
+            attrs: Default::default(),
+            text: None,
+            style: ComputedStyle {
+                display: Display::TableRow,
+                ..ComputedStyle::default()
+            },
+            children: cells,
+        }
+    }
+
+    #[test]
+    fn three_auto_cells_use_email_weights() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+        ]);
+        let (children, _) = layout_table_row(0.0, 0.0, 1000.0, &row);
+        assert_eq!(children.len(), 3);
+        assert!((children[0].rect.width - 650.0).abs() < 1.0); // 0.65 * 1000
+        assert!((children[1].rect.width - 100.0).abs() < 1.0); // 0.10 * 1000
+        assert!((children[2].rect.width - 250.0).abs() < 1.0); // 0.25 * 1000
+    }
+
+    #[test]
+    fn two_auto_cells_use_email_weights() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+        ]);
+        let (children, _) = layout_table_row(0.0, 0.0, 1000.0, &row);
+        assert_eq!(children.len(), 2);
+        assert!((children[0].rect.width - 750.0).abs() < 1.0); // 0.75 * 1000
+        assert!((children[1].rect.width - 250.0).abs() < 1.0); // 0.25 * 1000
+    }
+
+    #[test]
+    fn four_auto_cells_divide_equally() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+        ]);
+        let (children, _) = layout_table_row(0.0, 0.0, 1000.0, &row);
+        assert_eq!(children.len(), 4);
+        for child in &children {
+            assert!((child.rect.width - 250.0).abs() < 1.0);
+        }
+    }
+
+    #[test]
+    fn px_width_cells_use_explicit_width() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Px(200.0)),
+            make_cell(Display::TableCell, SizeValue::Px(400.0)),
+        ]);
+        let (children, _) = layout_table_row(0.0, 0.0, 1000.0, &row);
+        assert!((children[0].rect.width - 200.0).abs() < 1.0);
+        assert!((children[1].rect.width - 400.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn percent_width_cells_resolve_against_content_width() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Percent(25.0)),
+            make_cell(Display::TableCell, SizeValue::Percent(75.0)),
+        ]);
+        let (children, _) = layout_table_row(0.0, 0.0, 800.0, &row);
+        // percent resolves in layout_table_row to child_parent_width,
+        // then layout_node re-resolves style.width=Percent against that value
+        // so just verify relative sizing is correct
+        assert!(children[0].rect.width < children[1].rect.width);
+        let total = children[0].rect.width + children[1].rect.width;
+        assert!((total - 800.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn display_none_cells_are_excluded() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::None, SizeValue::Auto), // should be skipped
+            make_cell(Display::TableCell, SizeValue::Auto),
+        ]);
+        // Only 2 visible cells, so should use 2-cell weights
+        let (children, _) = layout_table_row(0.0, 0.0, 1000.0, &row);
+        assert_eq!(children.len(), 2);
+        assert!((children[0].rect.width - 750.0).abs() < 1.0);
+        assert!((children[1].rect.width - 250.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn cells_share_same_row_height() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+            make_cell(Display::TableCell, SizeValue::Auto),
+        ]);
+        let (children, row_height) = layout_table_row(0.0, 0.0, 900.0, &row);
+        for child in &children {
+            assert_eq!(child.rect.height, row_height);
+        }
+    }
+
+    #[test]
+    fn cells_positioned_left_to_right() {
+        let row = make_row(vec![
+            make_cell(Display::TableCell, SizeValue::Px(100.0)),
+            make_cell(Display::TableCell, SizeValue::Px(200.0)),
+            make_cell(Display::TableCell, SizeValue::Px(300.0)),
+        ]);
+        let (children, _) = layout_table_row(0.0, 0.0, 600.0, &row);
+        assert!((children[0].rect.x - 0.0).abs() < 1.0);
+        assert!((children[1].rect.x - 100.0).abs() < 1.0);
+        assert!((children[2].rect.x - 300.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn content_x_offset_applied() {
+        let row = make_row(vec![make_cell(Display::TableCell, SizeValue::Px(100.0))]);
+        let (children, _) = layout_table_row(50.0, 0.0, 600.0, &row);
+        assert!((children[0].rect.x - 50.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn cursor_y_applied_to_cells() {
+        let row = make_row(vec![make_cell(Display::TableCell, SizeValue::Auto)]);
+        let (children, _) = layout_table_row(0.0, 100.0, 600.0, &row);
+        assert!((children[0].rect.y - 100.0).abs() < 1.0);
+    }
+    #[test]
+    fn single_short_word_fits_on_one_line() {
+        let layout = layout_text("Hello", 16.0, 19.2, 200.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "Hello");
+    }
+
+    #[test]
+    fn multiple_words_fit_on_one_line() {
+        let layout = layout_text("Hello world", 16.0, 19.2, 200.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "Hello world");
+    }
+
+    #[test]
+    fn long_text_wraps_to_multiple_lines() {
+        // char_width = 16 * 0.55 = 8.8, max_chars = floor(100 / 8.8) = 11
+        // "Hello world" = 11 chars, fits. "Hello world foo" = 15, doesn't.
+        let layout = layout_text("Hello world foo", 16.0, 19.2, 100.0);
+        assert!(layout.lines.len() > 1);
+        assert_eq!(layout.lines[0], "Hello world");
+        assert_eq!(layout.lines[1], "foo");
+    }
+
+    #[test]
+    fn empty_string_produces_one_empty_line() {
+        let layout = layout_text("", 16.0, 19.2, 200.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "");
+    }
+
+    #[test]
+    fn whitespace_only_produces_one_empty_line() {
+        let layout = layout_text("   \n\t  ", 16.0, 19.2, 200.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "");
+    }
+
+    #[test]
+    fn explicit_line_height_used_when_positive() {
+        let layout = layout_text("Hello", 16.0, 24.0, 200.0);
+        assert_eq!(layout.line_height, 24.0);
+    }
+
+    #[test]
+    fn zero_line_height_falls_back_to_font_size_times_1_2() {
+        let layout = layout_text("Hello", 16.0, 0.0, 200.0);
+        assert!((layout.line_height - 19.2).abs() < 0.01); // 16 * 1.2
+    }
+
+    #[test]
+    fn negative_line_height_falls_back_to_font_size_times_1_2() {
+        let layout = layout_text("Hello", 16.0, -1.0, 200.0);
+        assert!((layout.line_height - 19.2).abs() < 0.01);
+    }
+
+    #[test]
+    fn font_size_stored_correctly() {
+        let layout = layout_text("Hello", 24.0, 19.2, 200.0);
+        assert_eq!(layout.font_size, 24.0);
+    }
+
+    #[test]
+    fn very_narrow_width_puts_each_word_on_its_own_line() {
+        // char_width = 16 * 0.55 = 8.8, max_chars = floor(8.8 / 8.8) = 1
+        // each word is longer than 1 char, so each goes on its own line
+        let layout = layout_text("a b c", 16.0, 19.2, 8.8);
+        assert_eq!(layout.lines, vec!["a", "b", "c"]);
+    }
+
+    #[test]
+    fn leading_and_trailing_whitespace_is_ignored() {
+        let layout = layout_text("  Hello world  ", 16.0, 19.2, 200.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "Hello world");
+    }
+
+    #[test]
+    fn newlines_in_text_are_treated_as_whitespace() {
+        let layout = layout_text("Hello\nworld", 16.0, 19.2, 200.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "Hello world");
+    }
+
+    #[test]
+    fn single_very_long_word_goes_on_its_own_line() {
+        // A word longer than max_chars still gets placed, just alone on its line
+        let layout = layout_text("superlongwordthatexceedsmaxwidth", 16.0, 19.2, 50.0);
+        assert_eq!(layout.lines.len(), 1);
+        assert_eq!(layout.lines[0], "superlongwordthatexceedsmaxwidth");
     }
 }
