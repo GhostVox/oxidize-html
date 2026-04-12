@@ -364,20 +364,32 @@ fn layout_inline_node(
         SizeValue::Percent(pct) => max_width * (pct / 100.0),
         SizeValue::Auto => content_used_width,
     };
-    let width = resolved_width + padding.left + padding.right + margin.left + margin.right;
-    let height = match node.style.height {
-        SizeValue::Px(px) => px + margin.top + margin.bottom,
-        _ => content_height + padding.top + padding.bottom + margin.top + margin.bottom,
+    let is_text_node = node.tag.is_none() && node.text.is_some();
+
+    let width = if is_text_node {
+        content_used_width
+    } else {
+        resolved_width + padding.left + padding.right + margin.left + margin.right
+    };
+
+    let height = if is_text_node {
+        content_height
+    } else {
+        match node.style.height {
+            SizeValue::Px(px) => px + margin.top + margin.bottom,
+            _ => content_height + padding.top + padding.bottom + margin.top + margin.bottom,
+        }
+    };
+    let rect = Rect {
+        x: if is_text_node { x } else { x + margin.left },
+        y: if is_text_node { y } else { y + margin.top },
+        width: width.max(0.0),
+        height: height.max(0.0),
     };
 
     let out = LayoutNode {
         node_id: node.node_id,
-        rect: Rect {
-            x: x + margin.left,
-            y: y + margin.top,
-            width: width.max(0.0),
-            height: height.max(0.0),
-        },
+        rect,
         style: node.style.clone(),
         content: own_content,
         bullet_origin: if node.style.display == Display::ListItem {
