@@ -33,12 +33,18 @@ impl StyleEngine {
     }
 
     fn visit(&mut self, handle: &Handle, inherited: &ComputedStyle) -> StyledNode {
+        let node_id = self.alloc_id(); // Predictable ID allocation
+
         let mut style = inherited.clone();
         let mut tag = None;
         let mut attrs = HashMap::new();
         let mut text = None;
 
         match &handle.data {
+            NodeData::Document => {
+                // The root MUST be visible to process children
+                style.display = Display::Block;
+            }
             NodeData::Element {
                 name, attrs: raw, ..
             } => {
@@ -66,13 +72,16 @@ impl StyleEngine {
                     text = Some(value);
                 }
             }
-            _ => {}
+            _ => {
+                // Comments and Doctypes should be ignored
+                style.display = Display::None;
+            }
         }
 
-        let node_id = self.alloc_id();
         let mut children = Vec::new();
         for child in handle.children.borrow().iter() {
             let child_node = self.visit(child, &style);
+
             if child_node.style.display != Display::None
                 && (child_node.text.is_some()
                     || child_node.tag.is_some()
