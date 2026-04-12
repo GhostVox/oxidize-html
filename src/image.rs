@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use base64::Engine;
 
 #[derive(Debug, Clone, PartialEq)]
+/// The format of an image, used to determine how to decode the image data.
 pub enum ImageFormat {
     Png,
     Jpeg,
@@ -12,6 +13,7 @@ pub enum ImageFormat {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// The source of an image, which can be a local file path, a remote URL, a data URI, or a CID.
 pub enum ImageSource {
     DataUri(Vec<u8>, ImageFormat),
     Remote(String),
@@ -20,12 +22,14 @@ pub enum ImageSource {
     Invalid,
 }
 
+/// The image data, including the image format and the raw image data.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImageData {
     pub bytes: Vec<u8>,
     pub format: ImageFormat,
 }
 
+/// Takes an image source string and determines the type of source it is, returning an `ImageSource` enum.
 pub fn parse_source(src: &str) -> ImageSource {
     let src = src.trim();
     if src.starts_with("data:") {
@@ -43,6 +47,7 @@ pub fn parse_source(src: &str) -> ImageSource {
     ImageSource::Invalid
 }
 
+/// Takes an image source string and a map of MIME types to image data and attempts to resolve the image source to an [`ImageData`] struct.
 pub fn resolve_image(src: &str, mime_parts: &HashMap<String, Vec<u8>>) -> Option<ImageData> {
     match parse_source(src) {
         ImageSource::DataUri(bytes, format) => Some(ImageData { bytes, format }),
@@ -58,6 +63,7 @@ pub fn resolve_image(src: &str, mime_parts: &HashMap<String, Vec<u8>>) -> Option
     }
 }
 
+/// Returns the dimensions of the image source if it can be determined, otherwise returns `None`.
 pub fn source_dimensions(source: &ImageSource) -> Option<(u32, u32)> {
     match source {
         ImageSource::DataUri(bytes, _) => image::load_from_memory(bytes)
@@ -68,6 +74,7 @@ pub fn source_dimensions(source: &ImageSource) -> Option<(u32, u32)> {
     }
 }
 
+/// Takes a data URI string and decodes it into an [`ImageData`] struct.
 fn resolve_data_uri(src: &str) -> Option<ImageSource> {
     let payload = src.strip_prefix("data:")?;
     let (meta, data) = payload.split_once(',')?;
@@ -80,7 +87,10 @@ fn resolve_data_uri(src: &str) -> Option<ImageSource> {
         .ok()?;
     Some(ImageSource::DataUri(bytes, format_from_mime(mime)))
 }
-
+///
+///
+/// Determines the image format from a MIME type string, returning an [`ImageFormat`] enum.
+///
 fn format_from_mime(mime: &str) -> ImageFormat {
     match mime {
         "image/png" => ImageFormat::Png,
@@ -91,6 +101,7 @@ fn format_from_mime(mime: &str) -> ImageFormat {
     }
 }
 
+/// Supports Png, Jpeg, GIF, and Webp formats.
 fn detect_image_format(bytes: &[u8]) -> ImageFormat {
     if bytes.starts_with(&[0x89, b'P', b'N', b'G']) {
         ImageFormat::Png
