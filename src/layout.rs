@@ -50,46 +50,8 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
 
     // TABLE ROW LOGIC
     if is_table_row(node) {
-        let mut cursor_x = content_x;
-        let mut row_height: f32 = 0.0;
-
-        // Count non-empty/visible children to divide space fairly
-        let visible_children: Vec<&StyledNode> = node
-            .children
-            .iter()
-            .filter(|c| c.style.display != Display::None)
-            .collect();
-        let cell_count = visible_children.len();
-
-        for (i, child) in visible_children.iter().enumerate() {
-            let child_parent_width = match child.style.width {
-                SizeValue::Px(px) => px.max(1.0),
-                SizeValue::Percent(pct) => (content_width * (pct / 100.0)).max(1.0),
-                SizeValue::Auto => {
-                    // Robust Email Column Strategy:
-                    if cell_count == 3 {
-                        let weights = [0.65, 0.10, 0.25]; // Item / Qty / Price
-                        (content_width * weights[i]).max(1.0)
-                    } else if cell_count == 2 {
-                        let weights = [0.75, 0.25]; // Label / Total
-                        (content_width * weights[i]).max(1.0)
-                    } else {
-                        (content_width / cell_count as f32).max(1.0)
-                    }
-                }
-            };
-
-            let (height, child_layout) = layout_node(child, cursor_x, cursor_y, child_parent_width);
-            cursor_x += child_layout.rect.width.max(0.0);
-            row_height = row_height.max(height.max(child_layout.rect.height));
-            children.push(child_layout);
-        }
-
-        // Apply row_height to all cells (Second pass)
-        for child_layout in &mut children {
-            child_layout.rect.height = row_height;
-        }
-
+        let (row_children, row_height) = layout_table_row(content_x, cursor_y, content_width, node);
+        children.extend(row_children);
         cursor_y += row_height;
     }
     // TABLE GROUP PASSTHROUGH (thead, tbody)
@@ -416,6 +378,56 @@ fn is_inline_node(node: &StyledNode) -> bool {
 
 fn is_table_row(node: &StyledNode) -> bool {
     node.tag.as_deref() == Some("tr") || node.style.display == Display::TableRow
+}
+
+fn layout_table_row(
+    content_x: f32,
+    cursor_y: f32,
+    content_width: f32,
+    node: &StyledNode,
+) -> (Vec<LayoutNode>, f32) {
+    let mut cursor_x = content_x;
+    let mut row_height: f32 = 0.0;
+
+    let mut children = Vec::new();
+    // Count non-empty/visible children to divide space fairly
+    let visible_children: Vec<&StyledNode> = node
+        .children
+        .iter()
+        .filter(|c| c.style.display != Display::None)
+        .collect();
+    let cell_count = visible_children.len();
+
+    for (i, child) in visible_children.iter().enumerate() {
+        let child_parent_width = match child.style.width {
+            SizeValue::Px(px) => px.max(1.0),
+            SizeValue::Percent(pct) => (content_width * (pct / 100.0)).max(1.0),
+            SizeValue::Auto => {
+                // Robust Email Column Strategy:
+                if cell_count == 3 {
+                    let weights = [0.65, 0.10, 0.25]; // Item / Qty / Price
+                    (content_width * weights[i]).max(1.0)
+                } else if cell_count == 2 {
+                    let weights = [0.75, 0.25]; // Label / Total
+                    (content_width * weights[i]).max(1.0)
+                } else {
+                    (content_width / cell_count as f32).max(1.0)
+                }
+            }
+        };
+
+        let (height, child_layout) = layout_node(child, cursor_x, cursor_y, child_parent_width);
+        cursor_x += child_layout.rect.width.max(0.0);
+        row_height = row_height.max(height.max(child_layout.rect.height));
+        children.push(child_layout);
+    }
+
+    // Apply row_height to all cells (Second pass)
+    for child_layout in &mut children {
+        child_layout.rect.height = row_height;
+    }
+
+    (children, row_height)
 }
 
 fn shift_layout_x(node: &mut LayoutNode, delta: f32) {
