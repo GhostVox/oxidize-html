@@ -18,6 +18,7 @@ impl LayoutEngine {
 }
 
 fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, LayoutNode) {
+    // Handle display: none nodes by creating a zero-sized box.
     if node.style.display == Display::None {
         let layout = LayoutNode {
             node_id: node.node_id,
@@ -31,6 +32,7 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
             content: NodeContent::Box,
             bullet_origin: None,
             children: Vec::new(),
+            tag: node.tag.clone(),
         };
         return (0.0, layout);
     }
@@ -172,6 +174,7 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
         width: width,            // just the box width, no margins
         height: box_height,      // just box height, no margins
     };
+
     let out = LayoutNode {
         node_id: node.node_id,
         rect,
@@ -186,7 +189,9 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
             None
         },
         children,
+        tag: node.tag.clone(),
     };
+
     (space_consumed, out)
 }
 
@@ -241,6 +246,10 @@ fn layout_inline_node(
         intrinsic_width = max_width;
         intrinsic_height = 1.0;
         own_content = NodeContent::Hr;
+    } else if node.tag.as_deref() == Some("br") {
+        // FIX: A <br> should occupy exactly one line of height
+        intrinsic_height = node.style.line_height;
+        own_content = NodeContent::Box;
     }
 
     let mut children = Vec::new();
@@ -316,6 +325,7 @@ fn layout_inline_node(
             None
         },
         children,
+        tag: node.tag.clone(),
     };
     (out.rect.width, out.rect.height, out)
 }
