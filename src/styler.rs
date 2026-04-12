@@ -256,25 +256,38 @@ fn apply_tag_defaults(tag: &str, style: &mut ComputedStyle, parent_font_size: f3
             };
 
             style.text_align = TextAlign::Left;
-            if matches!(tag, "html" | "body") {
+
+            if matches!(tag, "td" | "th") {
+                style.vertical_align = VerticalAlign::Middle;
+                if tag == "th" {
+                    style.font_weight = FontWeight::Bold;
+                }
+            }
+
+            if matches!(tag, "html" | "body" | "table" | "tr") {
                 style.margin = Edges::all(0.0);
                 style.padding = Edges::all(0.0);
             }
         }
+
         "span" | "font" => style.display = Display::Inline,
+
         "a" => {
             style.display = Display::Inline;
             style.color = parse_color("#0000EE").unwrap_or(style.color);
             style.text_decoration = TextDecoration::Underline;
         }
+
         "b" | "strong" => {
             style.display = Display::Inline;
             style.font_weight = FontWeight::Bold;
         }
+
         "i" | "em" => {
             style.display = Display::Inline;
             style.font_style = FontStyle::Italic;
         }
+
         "u" | "ins" => {
             style.display = Display::Inline;
             style.text_decoration = TextDecoration::Underline;
