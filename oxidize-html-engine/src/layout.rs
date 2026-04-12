@@ -8,11 +8,13 @@ pub struct LayoutEngine;
 
 impl LayoutEngine {
     /// Takes a Root [`StyledNode`] and the available width for layout and computes the layout tree, returning the root [`LayoutNode`].
-    pub fn compute(&mut self, root: &StyledNode, available_width: f32) -> LayoutNode {
+    pub fn compute(&mut self, root: &StyledNode, available_width: f32, debug: bool) -> LayoutNode {
         let (_, node) = layout_node(root, 0.0, 0.0, available_width);
-        println!("Debug Layout:");
-        println!();
-        debug_layout_tree(&node, 0);
+        if debug {
+            println!("Debug Layout:");
+            println!();
+            debug_layout_tree(&node, 0);
+        }
         node
     }
 }
@@ -495,7 +497,7 @@ fn resolve_image_size(
 
 fn layout_text(text: &str, font_size: f32, line_height: f32, max_width: f32) -> TextLayout {
     let char_width = (font_size * 0.55).max(1.0);
-    let max_chars = ((max_width / char_width).floor().max(1.0)) as usize;
+    let max_chars = (max_width / char_width).floor().max(1.0) as usize;
     let mut lines = Vec::new();
     let mut current = String::new();
 
@@ -537,13 +539,13 @@ fn debug_layout_tree(node: &LayoutNode, indent: usize) {
         format!("[<{}>]", tag)
     } else {
         match &node.content {
-            crate::NodeContent::Text(layout) => {
+            NodeContent::Text(layout) => {
                 let text_snippet: String = layout.lines.join(" ").chars().take(20).collect();
                 format!("\"{}...\"", text_snippet.escape_debug())
             }
-            crate::NodeContent::Image { source, .. } => format!("[<img> {:?}]", source),
-            crate::NodeContent::Hr => "[<hr>]".to_string(),
-            crate::NodeContent::Box => "[<box>]".to_string(),
+            NodeContent::Image { source, .. } => format!("[<img> {:?}]", source),
+            NodeContent::Hr => "[<hr>]".to_string(),
+            NodeContent::Box => "[<box>]".to_string(),
         }
     };
 
@@ -555,7 +557,7 @@ fn debug_layout_tree(node: &LayoutNode, indent: usize) {
     );
 
     // 3. Add specific content indicators
-    if let crate::NodeContent::Text(layout) = &node.content {
+    if let NodeContent::Text(layout) = &node.content {
         print!(" \x1b[35m(lines: {})\x1b[0m", layout.lines.len());
     }
 
@@ -571,7 +573,7 @@ fn debug_layout_tree(node: &LayoutNode, indent: usize) {
 mod tests {
     use super::*;
     use crate::{ComputedStyle, HtmlRenderer, LayoutNode, NodeContent};
-    fn find_first_text(node: &LayoutNode) -> Option<&crate::TextLayout> {
+    fn find_first_text(node: &LayoutNode) -> Option<&TextLayout> {
         if let NodeContent::Text(layout) = &node.content {
             return Some(layout);
         }
@@ -599,8 +601,8 @@ mod tests {
         let mut renderer = HtmlRenderer::default();
         let mut style = renderer.style_tree(html);
         crate::table::normalize_tables(&mut style, 120.0);
-        let mut engine = super::LayoutEngine;
-        let layout = engine.compute(&style, 120.0);
+        let mut engine = LayoutEngine;
+        let layout = engine.compute(&style, 120.0, false);
         let text = find_first_text(&layout).expect("text");
         assert!(text.lines.len() > 1);
     }
@@ -611,8 +613,8 @@ mod tests {
         let mut renderer = HtmlRenderer::default();
         let mut style = renderer.style_tree(html);
         crate::table::normalize_tables(&mut style, 120.0);
-        let mut engine = super::LayoutEngine;
-        let layout = engine.compute(&style, 120.0);
+        let mut engine = LayoutEngine;
+        let layout = engine.compute(&style, 120.0, false);
         let mut texts = Vec::new();
         collect_text_positions(&layout, &mut texts);
 
@@ -639,8 +641,8 @@ mod tests {
         let mut renderer = HtmlRenderer::default();
         let mut style = renderer.style_tree(html);
         crate::table::normalize_tables(&mut style, 600.0);
-        let mut engine = super::LayoutEngine;
-        let layout = engine.compute(&style, 600.0);
+        let mut engine = LayoutEngine;
+        let layout = engine.compute(&style, 600.0, false);
 
         let mut cells = Vec::new();
         collect_cells(&layout, &mut cells);
@@ -664,8 +666,8 @@ mod tests {
         let mut renderer = HtmlRenderer::default();
         let mut style = renderer.style_tree(html);
         crate::table::normalize_tables(&mut style, 520.0);
-        let mut engine = super::LayoutEngine;
-        let layout = engine.compute(&style, 520.0);
+        let mut engine = LayoutEngine;
+        let layout = engine.compute(&style, 520.0, false);
 
         let mut rows = Vec::new();
         collect_rows(&layout, &mut rows);
@@ -673,14 +675,14 @@ mod tests {
         let cells: Vec<&LayoutNode> = row
             .children
             .iter()
-            .filter(|n| matches!(n.style.display, crate::Display::TableCell))
+            .filter(|n| matches!(n.style.display, Display::TableCell))
             .collect();
         assert_eq!(cells.len(), 2);
         assert!((cells[1].rect.x - (cells[0].rect.x + 400.0)).abs() < 1.0);
     }
 
     fn collect_rows<'a>(node: &'a LayoutNode, out: &mut Vec<&'a LayoutNode>) {
-        if matches!(node.style.display, crate::Display::TableRow) {
+        if matches!(node.style.display, Display::TableRow) {
             out.push(node);
             return;
         }
@@ -690,7 +692,7 @@ mod tests {
     }
 
     fn collect_cells<'a>(node: &'a LayoutNode, out: &mut Vec<&'a LayoutNode>) {
-        if matches!(node.style.display, crate::Display::TableCell)
+        if matches!(node.style.display, Display::TableCell)
             && matches!(node.content, NodeContent::Box)
         {
             out.push(node);

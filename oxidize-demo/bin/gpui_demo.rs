@@ -136,7 +136,7 @@ impl Render for DemoApp {
         if (target_width - self.render_width).abs() > f32::EPSILON {
             self.render_width = target_width;
         }
-        let commands = self.renderer.render_html(&self.html, target_width);
+        let commands = self.renderer.render_html(&self.html, target_width, true);
 
         let lines_panel = div()
             .id("renderer-command-panel")

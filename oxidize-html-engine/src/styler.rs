@@ -20,15 +20,17 @@ pub struct StyleEngine {
 }
 
 impl StyleEngine {
-    pub fn compute(&mut self, dom: &RcDom) -> StyledNode {
+    pub fn compute(&mut self, dom: &RcDom, debug: bool) -> StyledNode {
         self.next_id = 0;
         self.rules = Self::collect_stylesheet_rules(dom);
         let root_style = ComputedStyle::default();
 
         let root = self.visit(&dom.document, &root_style);
-        println!("Debug style tree:");
-        println!();
-        print_style_tree(&root, 0);
+        if debug {
+            println!("Debug style tree:");
+            println!();
+            print_style_tree(&root, 0);
+        }
         root
     }
 
@@ -733,7 +735,7 @@ fn parse_size(value: &str, base_font_size: f32) -> Option<SizeValue> {
     parse_length_like(&value, base_font_size).map(SizeValue::Px)
 }
 
-fn print_style_tree(node: &crate::StyledNode, indent: usize) {
+fn print_style_tree(node: &StyledNode, indent: usize) {
     let indent_str = "  ".repeat(indent);
 
     // 1. Format the identity of the node
@@ -757,7 +759,7 @@ fn print_style_tree(node: &crate::StyledNode, indent: usize) {
     let s = &node.style;
     let mut props = Vec::new();
 
-    if s.display != crate::Display::Block {
+    if s.display != Display::Block {
         props.push(format!("display:{:?}", s.display));
     }
     if let Some(bg) = s.background_color {
@@ -776,7 +778,7 @@ fn print_style_tree(node: &crate::StyledNode, indent: usize) {
     if s.font_size != 16.0 {
         props.push(format!("size:{}", s.font_size));
     }
-    if s.font_weight != crate::FontWeight::Normal {
+    if s.font_weight != FontWeight::Normal {
         props.push("bold".to_string());
     }
 
@@ -888,7 +890,7 @@ mod tests {
     fn style_block_applies_to_elements() {
         let dom = parser::parse("<style>p { color: #ff0000; }</style><p>hello</p>");
         let mut engine = StyleEngine::default();
-        let tree = engine.compute(&dom);
+        let tree = engine.compute(&dom, false);
 
         fn find_first_tag<'a>(
             node: &'a crate::StyledNode,

@@ -319,18 +319,18 @@ impl Default for HtmlRenderer {
 
 impl HtmlRenderer {
     /// Renders the given HTML string into a list of draw commands to be used with GPUI to render HTML.
-    pub fn render(&mut self, html: &str, available_width: f32) -> Vec<DrawCommand> {
-        self.render_html(html, available_width)
+    pub fn render(&mut self, html: &str, available_width: f32, debug: bool) -> Vec<DrawCommand> {
+        self.render_html(html, available_width, debug)
     }
 
-    pub fn render_html(&mut self, html: &str, width: f32) -> Vec<DrawCommand> {
+    pub fn render_html(&mut self, html: &str, width: f32, debug: bool ) -> Vec<DrawCommand> {
         // Check if the HTML has changed since last render.
         let html_changed = self.cached_html != html;
 
         // If the HTML has changed or if the style cache is empty, recompute the dom and style tree.
         if self.style_cache.is_none() || html_changed {
             let dom = parser::parse(html);
-            self.style_cache = Some(self.styler.compute(&dom));
+            self.style_cache = Some(self.styler.compute(&dom, debug));
             self.cached_html = html.to_string();
             self.layout_cache = None;
             self.last_width = -1.0;
@@ -342,7 +342,7 @@ impl HtmlRenderer {
             if let Some(base_style_tree) = &self.style_cache {
                 let mut style_tree = base_style_tree.clone();
                 table::normalize_tables(&mut style_tree, width);
-                let layout_tree = self.layout.compute(&style_tree, width);
+                let layout_tree = self.layout.compute(&style_tree, width, debug);
                 self.layout_cache = Some(layout_tree);
                 self.last_width = width;
             }
@@ -357,9 +357,10 @@ impl HtmlRenderer {
     }
 
     /// Parses the given HTML into a tree and returns the root node of a style tree.
+    /// Only used in test functions
     pub fn style_tree(&mut self, html: &str) -> StyledNode {
         let dom = parser::parse(html);
-        self.styler.compute(&dom)
+        self.styler.compute(&dom,false )
     }
 }
 
