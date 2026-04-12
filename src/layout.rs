@@ -7,8 +7,12 @@ use crate::{
 pub struct LayoutEngine;
 
 impl LayoutEngine {
+    /// Takes a Root [`StyledNode`] and the available width for layout and computes the layout tree, returning the root [`LayoutNode`].
     pub fn compute(&mut self, root: &StyledNode, available_width: f32) -> LayoutNode {
         let (_, node) = layout_node(root, 0.0, 0.0, available_width);
+        println!("Debug Layout:");
+        println!();
+        debug_layout_tree(&node, 0);
         node
     }
 }
@@ -413,6 +417,43 @@ fn layout_text(text: &str, font_size: f32, line_height: f32, max_width: f32) -> 
             font_size * 1.2
         },
         font_size,
+    }
+}
+fn debug_layout_tree(node: &LayoutNode, indent: usize) {
+    let indent_str = "  ".repeat(indent);
+
+    // 1. Differentiate between Tags and Text/Images
+    let label = if let Some(tag) = &node.tag {
+        format!("[<{}>]", tag)
+    } else {
+        match &node.content {
+            crate::NodeContent::Text(layout) => {
+                let text_snippet: String = layout.lines.join(" ").chars().take(20).collect();
+                format!("\"{}...\"", text_snippet.escape_debug())
+            }
+            crate::NodeContent::Image { source, .. } => format!("[<img> {:?}]", source),
+            crate::NodeContent::Hr => "[<hr>]".to_string(),
+            crate::NodeContent::Box => "[<box>]".to_string(),
+        }
+    };
+
+    // 2. Print Geometry in a readable format
+    // Using green for geometry to make it pop against the labels
+    print!(
+        "{}{:<25} \x1b[32mpos:({:>4.1}, {:>4.1}) size:[{:>4.1} x {:>4.1}]\x1b[0m",
+        indent_str, label, node.rect.x, node.rect.y, node.rect.width, node.rect.height
+    );
+
+    // 3. Add specific content indicators
+    if let crate::NodeContent::Text(layout) = &node.content {
+        print!(" \x1b[35m(lines: {})\x1b[0m", layout.lines.len());
+    }
+
+    println!(); // End line
+
+    // 4. Recurse
+    for child in &node.children {
+        debug_layout_tree(child, indent + 1);
     }
 }
 
