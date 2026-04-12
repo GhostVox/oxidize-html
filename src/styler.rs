@@ -24,7 +24,12 @@ impl StyleEngine {
         self.next_id = 0;
         self.rules = Self::collect_stylesheet_rules(dom);
         let root_style = ComputedStyle::default();
-        self.visit(&dom.document, &root_style)
+
+        let root = self.visit(&dom.document, &root_style);
+        println!("Debug style tree:");
+        println!();
+        print_style_tree(&root, 0);
+        root
     }
 
     fn visit(&mut self, handle: &Handle, inherited: &ComputedStyle) -> StyledNode {
@@ -656,6 +661,65 @@ fn parse_size(value: &str, base_font_size: f32) -> Option<SizeValue> {
             .map(SizeValue::Percent);
     }
     parse_length_like(&value, base_font_size).map(SizeValue::Px)
+}
+
+fn print_style_tree(node: &crate::StyledNode, indent: usize) {
+    let indent_str = "  ".repeat(indent);
+
+    // 1. Format the identity of the node
+    if let Some(tag) = &node.tag {
+        // Use brackets for tags to make them stand out
+        print!("{}[<{}>]", indent_str, tag);
+    } else if let Some(text) = &node.text {
+        // Truncate long text so it doesn't wrap and break the visual tree
+        let truncated: String = text.chars().take(40).collect();
+        let display_text = if text.len() > 40 {
+            format!("{}...", truncated)
+        } else {
+            truncated
+        };
+        print!("{}\"{}\"", indent_str, display_text.escape_debug());
+    } else {
+        print!("{}<anonymous>", indent_str);
+    }
+
+    // 2. Print only the "interesting" style properties
+    let s = &node.style;
+    let mut props = Vec::new();
+
+    if s.display != crate::Display::Block {
+        props.push(format!("display:{:?}", s.display));
+    }
+    if let Some(bg) = s.background_color {
+        props.push(format!("bg:{:?}", bg));
+    }
+
+    // Only show margins/padding if they aren't zero
+    if s.margin.top != 0.0
+        || s.margin.bottom != 0.0
+        || s.margin.left != 0.0
+        || s.margin.right != 0.0
+    {
+        props.push(format!("margin:{:?}", s.margin));
+    }
+
+    if s.font_size != 16.0 {
+        props.push(format!("size:{}", s.font_size));
+    }
+    if s.font_weight != crate::FontWeight::Normal {
+        props.push("bold".to_string());
+    }
+
+    if !props.is_empty() {
+        print!(" \x1b[33m-- {}\x1b[0m", props.join(", ")); // Yellow color for styles
+    }
+
+    println!(); // End line
+
+    // 3. Recurse
+    for child in &node.children {
+        print_style_tree(child, indent + 1);
+    }
 }
 
 fn parse_length_like(value: &str, base_font_size: f32) -> Option<f32> {
