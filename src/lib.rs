@@ -103,28 +103,47 @@ pub struct BorderSpec {
     pub color: Rgba,
 }
 
+/// The computed style of a DOM node, including all inherited styles.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ComputedStyle {
+    /// The computed color of the text.
     pub color: Rgba,
+    /// The computed background color of the node.
     pub background_color: Option<Rgba>,
+    /// The computed font size of the text.
     pub font_size: f32,
+    /// The computed font weight of the text.
     pub font_weight: FontWeight,
+    /// The computed font style of the text.
     pub font_style: FontStyle,
+    /// The computed font family of the text.
     pub font_family: Vec<String>,
+    /// The computed text alignment of the node.
     pub text_align: TextAlign,
+    /// The computed line height of the text.
     pub line_height: f32,
+    /// The computed padding of the node.
     pub padding: Edges<f32>,
+    /// The computed margin of the node.
     pub margin: Edges<f32>,
+    /// The computed width of the node.
     pub width: SizeValue,
+    /// The computed height of the node.
     pub height: SizeValue,
+    /// The computed display property of the node.
     pub display: Display,
+    /// The computed vertical alignment of the node.
     pub vertical_align: VerticalAlign,
+    /// The computed border of the node.
     pub border: Edges<BorderSpec>,
+    /// The computed text decoration of the node.
     pub text_decoration: TextDecoration,
+    /// The computed href of the link, if the node is a link.
     pub href: Option<String>,
 }
 
 impl Default for ComputedStyle {
+    /// Creates a default computed style with default values.
     fn default() -> Self {
         Self {
             color: Rgba::rgb(0, 0, 0),
@@ -151,24 +170,38 @@ impl Default for ComputedStyle {
     }
 }
 
+/// A rectangle in 2D space.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Rect {
+    /// The x-coordinate of the top-left corner of the rectangle.
     pub x: f32,
+    /// The y-coordinate of the top-left corner of the rectangle.
     pub y: f32,
+    /// The width of the rectangle.
     pub width: f32,
+    /// The height of the rectangle.
     pub height: f32,
 }
 
 impl Rect {
+    /// Calculates the right edge of the rectangle.
+    ///
+    /// # Return
+    /// f32 calculated by self.x + self.width.
     pub fn right(self) -> f32 {
         self.x + self.width
     }
 
+    /// Calculates the bottom edge of the rectangle.
+    ///
+    ///# Return
+    /// f32 calculated by self.y + self.height.
     pub fn bottom(self) -> f32 {
         self.y + self.height
     }
 }
 
+/// A point in 2D space.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point {
     pub x: f32,
@@ -194,12 +227,19 @@ pub enum NodeContent {
     Hr,
 }
 
+/// A node in the DOM tree, with computed style and children.
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct StyledNode {
+    /// Unique identifier for the node, used for caching and referencing in layout and paint stages.
     pub node_id: NodeId,
+    /// The tag name of the node, e.g. "div", "p", "span", etc.
     pub tag: Option<String>,
+    /// The attributes of the node, e.g. "id" and "class" attributes.
     pub attrs: std::collections::HashMap<String, String>,
+    /// The text content of the node, if any.
     pub text: Option<String>,
+    /// The
     pub style: ComputedStyle,
     pub children: Vec<StyledNode>,
 }
@@ -212,10 +252,12 @@ pub struct LayoutNode {
     pub content: NodeContent,
     pub bullet_origin: Option<Point>,
     pub children: Vec<LayoutNode>,
+    pub tag: Option<String>,
 }
 
 pub type LayoutTree = LayoutNode;
 
+/// A command to draw a shape or text on the screen
 #[derive(Debug, Clone, PartialEq)]
 pub enum DrawCommand {
     FillRect {
@@ -276,12 +318,16 @@ impl Default for HtmlRenderer {
 }
 
 impl HtmlRenderer {
+    /// Renders the given HTML string into a list of draw commands to be used with GPUI to render HTML.
     pub fn render(&mut self, html: &str, available_width: f32) -> Vec<DrawCommand> {
         self.render_html(html, available_width)
     }
 
     pub fn render_html(&mut self, html: &str, width: f32) -> Vec<DrawCommand> {
+        // Check if the HTML has changed since last render.
         let html_changed = self.cached_html != html;
+
+        // If the HTML has changed or if the style cache is empty, recompute the dom and style tree.
         if self.style_cache.is_none() || html_changed {
             let dom = parser::parse(html);
             self.style_cache = Some(self.styler.compute(&dom));
@@ -290,6 +336,7 @@ impl HtmlRenderer {
             self.last_width = -1.0;
         }
 
+        // If the width has changed, recompute the layout tree.
         let width_changed = (width - self.last_width).abs() > f32::EPSILON;
         if self.layout_cache.is_none() || width_changed {
             if let Some(base_style_tree) = &self.style_cache {
@@ -301,6 +348,7 @@ impl HtmlRenderer {
             }
         }
 
+        // Take the layout tree and convert it to a list of draw commands.
         let mut commands = Vec::new();
         if let Some(layout_tree) = &self.layout_cache {
             paint(layout_tree, &mut commands);
@@ -308,6 +356,7 @@ impl HtmlRenderer {
         commands
     }
 
+    /// Parses the given HTML into a tree and returns the root node of a style tree.
     pub fn style_tree(&mut self, html: &str) -> StyledNode {
         let dom = parser::parse(html);
         self.styler.compute(&dom)
