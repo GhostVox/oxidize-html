@@ -47,22 +47,62 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
     let content_width = (width - padding.left - padding.right).max(0.0);
 
     let mut children = Vec::new();
+
+    // TABLE ROW LOGIC
     if is_table_row(node) {
         let mut cursor_x = content_x;
         let mut row_height: f32 = 0.0;
-        for child in &node.children {
+
+        // Count non-empty/visible children to divide space fairly
+        let visible_children: Vec<&StyledNode> = node
+            .children
+            .iter()
+            .filter(|c| c.style.display != Display::None)
+            .collect();
+        let cell_count = visible_children.len();
+
+        for (i, child) in visible_children.iter().enumerate() {
             let child_parent_width = match child.style.width {
                 SizeValue::Px(px) => px.max(1.0),
                 SizeValue::Percent(pct) => (content_width * (pct / 100.0)).max(1.0),
-                SizeValue::Auto => (content_x + content_width - cursor_x).max(1.0),
+                SizeValue::Auto => {
+                    // Robust Email Column Strategy:
+                    if cell_count == 3 {
+                        let weights = [0.65, 0.10, 0.25]; // Item / Qty / Price
+                        (content_width * weights[i]).max(1.0)
+                    } else if cell_count == 2 {
+                        let weights = [0.75, 0.25]; // Label / Total
+                        (content_width * weights[i]).max(1.0)
+                    } else {
+                        (content_width / cell_count as f32).max(1.0)
+                    }
+                }
             };
+
             let (height, child_layout) = layout_node(child, cursor_x, cursor_y, child_parent_width);
             cursor_x += child_layout.rect.width.max(0.0);
             row_height = row_height.max(height.max(child_layout.rect.height));
             children.push(child_layout);
         }
+
+        // Apply row_height to all cells (Second pass)
+        for child_layout in &mut children {
+            child_layout.rect.height = row_height;
+        }
+
         cursor_y += row_height;
-    } else {
+    }
+    // TABLE GROUP PASSTHROUGH (thead, tbody)
+    else if matches!(node.tag.as_deref(), Some("thead" | "tbody" | "tfoot")) {
+        for child in &node.children {
+            let (height, child_layout) = layout_node(child, content_x, cursor_y, content_width);
+            cursor_y += height;
+            children.push(child_layout);
+        }
+    }
+    else {
+
+        // STANDARD BLOCK/INLINE LOGIC
         let line_start_x = content_x;
         let line_limit_x = line_start_x + content_width.max(1.0);
         let mut inline_cursor_x = line_start_x;
