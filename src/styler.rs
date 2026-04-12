@@ -292,40 +292,35 @@ fn apply_tag_defaults(tag: &str, style: &mut ComputedStyle, parent_font_size: f3
             style.display = Display::Inline;
             style.text_decoration = TextDecoration::Underline;
         }
-        "s" | "del" => {
-            style.display = Display::Inline;
-        }
-        "mark" | "code" | "abbr" | "cite" | "q" => {
-            style.display = Display::Inline;
-        }
-        "small" => {
-            style.display = Display::Inline;
-            style.font_size = parent_font_size * 0.875;
-        }
-        "sub" | "sup" => {
-            style.display = Display::Inline;
-            style.font_size = parent_font_size * 0.75;
-        }
+
         "h1" => {
-            style.display = Display::Block;
-            style.text_align = TextAlign::Left;
+            style.display = Display::Block; // CRITICAL: Was missing
             style.font_size = parent_font_size * 2.0;
             style.font_weight = FontWeight::Bold;
-            style.margin = Edges::all(parent_font_size * 0.67);
+            style.line_height = style.font_size * 1.2;
+            style.margin = Edges::all(0.0);
+            style.margin.top = style.font_size * 0.67;
+            style.margin.bottom = style.font_size * 0.67;
         }
+
         "h2" => {
             style.display = Display::Block;
-            style.text_align = TextAlign::Left;
             style.font_size = parent_font_size * 1.5;
             style.font_weight = FontWeight::Bold;
-            style.margin = Edges::all(parent_font_size * 0.75);
+            style.line_height = style.font_size * 1.2; // Added for safety
+            style.margin = Edges::all(0.0);
+            style.margin.top = parent_font_size * 0.75;
+            style.margin.bottom = parent_font_size * 0.75;
         }
+
         "h3" => {
             style.display = Display::Block;
-            style.text_align = TextAlign::Left;
             style.font_size = parent_font_size * 1.17;
             style.font_weight = FontWeight::Bold;
-            style.margin = Edges::all(parent_font_size * 0.83);
+            style.line_height = style.font_size * 1.2; // Added for safety
+            style.margin = Edges::all(0.0);
+            style.margin.top = parent_font_size * 0.83;
+            style.margin.bottom = parent_font_size * 0.83;
         }
         "p" => {
             style.display = Display::Block;
