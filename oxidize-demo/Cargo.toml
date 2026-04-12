@@ -1,0 +1,17 @@
+[package]
+name = "oxidize-demo"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+oxidize-html-engine = { path = "../oxidize-html-engine" }
+oxidize-render = { path = "../oxidize-render", features = ["gpui"] }
+gpui = { workspace = true }
+
+[feature]
+gpui = ["dep:gpui"]
+
+
+[[bin]]
+name = "gpui_demo"
+path = "bin/gpui_demo.rs"

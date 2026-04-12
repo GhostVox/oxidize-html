@@ -1,0 +1,9 @@
+[package]
+name = "oxidize-render"
+version = "0.1.0"
+edition = "2024"
+
+
+[dependencies]
+gpui = { version = "0.2.2", optional = true }
+oxidize-html-engine = { path = "../oxidize-html-engine" }
