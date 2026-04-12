@@ -182,6 +182,8 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
 
     let mut own_content = NodeContent::Box;
     let mut intrinsic_height = 0.0;
+
+    // ISSUE 1 FIX: Handling intrinsic height for Text/Image/Hr
     if let Some(text) = node.text.as_deref() {
         let layout = layout_text(
             text,
@@ -216,20 +218,21 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
     }
 
     let children_height = (cursor_y - (top + padding.top)).max(0.0);
+    // Combine children heights with the node's own intrinsic height (text, etc)
     let content_height = children_height.max(intrinsic_height);
-    // box_height is the visible box (padding + content), not including margins
+
     let box_height = match node.style.height {
         SizeValue::Px(px) => px,
         _ => content_height + padding.top + padding.bottom,
     };
-    // space_consumed is what the parent cursor_y advances by (includes both margins)
+
     let space_consumed = margin.top + box_height + margin.bottom;
 
     let rect = Rect {
         x: x + margin.left,
-        y: top,                  // top = y + margin.top already
-        width: width,            // just the box width, no margins
-        height: box_height,      // just box height, no margins
+        y: top,
+        width,
+        height: box_height,
     };
 
     let out = LayoutNode {
