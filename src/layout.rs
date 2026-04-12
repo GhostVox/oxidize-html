@@ -140,41 +140,39 @@ fn layout_node(node: &StyledNode, x: f32, y: f32, parent_width: f32) -> (f32, La
                     (line_limit_x - line_start_x).max(1.0),
                 );
 
-                if attempt_x > line_start_x && attempt_x + child_width > line_limit_x {
+                // Handle wrapping
+                if inline_cursor_x > line_start_x && inline_cursor_x + cw > line_limit_x {
                     cursor_y += inline_line_height;
                     inline_cursor_x = line_start_x;
                     inline_line_height = 0.0;
-                    attempt_x = inline_cursor_x;
-                    attempt_y = cursor_y;
-                    let (w, h, l) = layout_inline_node(
+                    let (nw, nh, nl) = layout_inline_node(
                         child,
-                        attempt_x,
-                        attempt_y,
+                        inline_cursor_x,
+                        cursor_y,
                         (line_limit_x - line_start_x).max(1.0),
                     );
-                    child_width = w;
-                    child_height = h;
-                    child_layout = l;
+                    cw = nw;
+                    ch = nh;
+                    cl = nl;
                 }
 
-                inline_cursor_x += child_width;
-                inline_line_height = inline_line_height.max(child_height);
-                children.push(child_layout);
-                continue;
-            }
+                inline_cursor_x += cw;
+                inline_line_height = inline_line_height.max(ch);
+                children.push(cl);
+            } else {
+                if in_inline_run {
+                    cursor_y += inline_line_height;
+                    inline_cursor_x = line_start_x;
+                    inline_line_height = 0.0;
+                    in_inline_run = false;
+                }
 
-            if in_inline_run {
-                cursor_y += inline_line_height;
-                inline_cursor_x = line_start_x;
-                inline_line_height = 0.0;
-                in_inline_run = false;
-            }
-
-            let (height, child_layout) =
-                layout_node(child, content_x, cursor_y, content_width.max(1.0));
-            if height > 0.0 || child_layout.content != NodeContent::Box {
-                cursor_y += height;
-                children.push(child_layout);
+                let (height, child_layout) =
+                    layout_node(child, content_x, cursor_y, content_width.max(1.0));
+                if height > 0.0 || child_layout.tag.is_some() {
+                    cursor_y += height;
+                    children.push(child_layout);
+                }
             }
         }
         if in_inline_run {
