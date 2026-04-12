@@ -230,6 +230,23 @@ fn base_style_with_inheritance(parent: &ComputedStyle) -> ComputedStyle {
 
 fn apply_tag_defaults(tag: &str, style: &mut ComputedStyle, parent_font_size: f32) {
     match tag {
+        // Invisible metadata tags
+        "head" | "meta" | "title" | "script" | "style" | "link" => {
+            style.display = Display::None;
+        }
+
+        "br" => {
+            style.display = Display::Inline;
+        }
+
+        // Table structural wrappers
+        "tbody" | "thead" | "tfoot" => {
+            style.display = Display::Block;
+            style.margin = Edges::all(0.0);
+            style.padding = Edges::all(0.0);
+        }
+
+        // Block and Table elements
         "html" | "body" | "div" | "section" | "article" | "table" | "tr" | "td" | "th" => {
             style.display = match tag {
                 "table" => Display::Table,
@@ -237,6 +254,7 @@ fn apply_tag_defaults(tag: &str, style: &mut ComputedStyle, parent_font_size: f3
                 "td" | "th" => Display::TableCell,
                 _ => Display::Block,
             };
+
             style.text_align = TextAlign::Left;
             if matches!(tag, "html" | "body") {
                 style.margin = Edges::all(0.0);
