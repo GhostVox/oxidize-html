@@ -272,6 +272,7 @@ fn layout_inline_node(
     let mut intrinsic_height = 0.0;
 
     if let Some(text) = node.text.as_deref() {
+        let has_leading_space = text.starts_with(char::is_whitespace);
         let layout = layout_text(
             text,
             node.style.font_size,
@@ -285,6 +286,9 @@ fn layout_inline_node(
             .map(|line| line.chars().count() as f32 * char_width)
             .fold(0.0, f32::max)
             .max(char_width);
+        if has_leading_space {
+            intrinsic_width += char_width;
+        }
         intrinsic_height = layout.lines.len() as f32 * layout.line_height;
         own_content = NodeContent::Text(layout);
     } else if node.tag.as_deref() == Some("img") {
