@@ -1,4 +1,7 @@
 # oxidize-render
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-render&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
+
+
 
 GPUI rendering backend for `oxidize-html-engine`. Translates `DrawCommand`s into GPUI elements.
 
