@@ -1,4 +1,5 @@
 name: Oxidize Render CI
+
 on:
   push:
     branches:
@@ -15,8 +16,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - run: cargo test -p oxidize-render
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run tests
+        run: cargo test -p oxidize-render
