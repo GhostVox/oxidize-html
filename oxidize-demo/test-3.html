@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+    body { font-family: sans-serif; margin: 0; background-color: #f4f4f4; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+    .header { background-color: #1a1a2e; padding: 20px; text-align: center; }
+    .content { padding: 24px; }
+    .footer { background-color: #eeeeee; padding: 16px; text-align: center; font-size: 12px; }
+    .product-row { border-bottom: 1px solid #dddddd; padding: 16px 0; }
+    .badge { display: inline-block; background-color: #e94560; color: white; padding: 4px 8px; font-size: 12px; }
+  </style>
+  <title>Order Confirmation</title>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header with logo -->
+  <div class="header">
+    <img src="https://static.licdn.com/sc/h/2fp5x7ci191mxbdy1eynscn59"
+         alt="Logo" width="120" height="40"
+         style="display: block; margin: 0 auto;">
+    <h1 style="color: #ffffff; margin: 12px 0 0 0; font-size: 24px;">Your Order is Confirmed</h1>
+  </div>
+
+  <div class="content">
+
+    <p style="font-size: 16px; color: #333333;">
+      Hi Brent, thanks for your order! Here's a summary of what you purchased.
+    </p>
+
+    <!-- Product with remote image -->
+    <div class="product-row">
+      <table width="100%">
+        <tr>
+          <td width="80">
+            <img src="https://static.licdn.com/sc/h/4eby4moebno1i6r34if7lud8o"
+                 alt="Product Image" width="72" height="72"
+                 style="border-radius: 4px;">
+          </td>
+          <td style="padding-left: 16px;">
+            <strong style="font-size: 16px;">Rust Programming Book</strong><br>
+            <span style="color: #666666; font-size: 14px;">Hardcover Edition</span><br>
+            <span style="color: #e94560; font-weight: bold;">$39.99</span>
+          </td>
+          <td align="right" width="80">
+            <span class="badge">x1</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Product with broken/invalid image to test placeholder -->
+    <div class="product-row">
+      <table width="100%">
+        <tr>
+          <td width="80">
+            <img src="https://invalid.example.com/image.png"
+                 alt="Missing Image" width="72" height="72"
+                 style="border-radius: 4px;">
+          </td>
+          <td style="padding-left: 16px;">
+            <strong style="font-size: 16px;">GTK4 GUI Framework</strong><br>
+            <span style="color: #666666; font-size: 14px;">Digital License</span><br>
+            <span style="color: #e94560; font-weight: bold;">$19.99</span>
+          </td>
+          <td align="right" width="80">
+            <span class="badge">x2</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Product with local path to test local image handling -->
+    <div class="product-row">
+      <table width="100%">
+        <tr>
+          <td width="80">
+            <img src="/usr/share/pixmaps/archlinux-logo.png"
+                 alt="Local Image" width="72" height="72">
+          </td>
+          <td style="padding-left: 16px;">
+            <strong style="font-size: 16px;">Arch Linux Sticker Pack</strong><br>
+            <span style="color: #666666; font-size: 14px;">Set of 10</span><br>
+            <span style="color: #e94560; font-weight: bold;">$9.99</span>
+          </td>
+          <td align="right" width="80">
+            <span class="badge">x1</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Order summary table -->
+    <table width="100%" style="margin-top: 24px; border-top: 2px solid #333333;">
+      <tr>
+        <td style="padding: 8px 0; color: #666666;">Subtotal</td>
+        <td align="right" style="padding: 8px 0;">$69.97</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; color: #666666;">Shipping</td>
+        <td align="right" style="padding: 8px 0;">$0.00</td>
+      </tr>
+      <tr style="font-weight: bold; font-size: 18px;">
+        <td style="padding: 8px 0;">Total</td>
+        <td align="right" style="padding: 8px 0; color: #e94560;">$69.97</td>
+      </tr>
+    </table>
+
+    <!-- CTA button -->
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="#" style="background-color: #1a1a2e; color: #ffffff; padding: 14px 32px;
+                         text-decoration: none; font-weight: bold; font-size: 16px;
+                         display: inline-block;">
+        Track Your Order
+      </a>
+    </div>
+
+    <!-- Banner image -->
+    <img src="https://static.licdn.com/sc/h/biuh9wrdh2y3k0d1fjfzcg2vb"
+         alt="Promo Banner" width="100%"
+         style="display: block; margin: 16px 0;">
+
+  </div>
+
+  <div class="footer">
+    <p>You received this email because you placed an order at <strong>Oxidize Store</strong>.</p>
+    <p><a href="#" style="color: #1a1a2e;">Unsubscribe</a> &middot; <a href="#" style="color: #1a1a2e;">Help</a></p>
+  </div>
+
+</div>
+</body>
+</html>

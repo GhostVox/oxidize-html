@@ -1,0 +1,26 @@
+name: Oxidize HTML Engine CI
+run-name: Oxidize HTML Engine CI
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'crates/oxidize-html-engine/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'crates/oxidize-html-engine/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+      - uses: actions/checkout@v2
+
+      - name: Install Rust stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: cargo test -p oxidize-html-engine
