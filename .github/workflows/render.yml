@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths:
-      - 'crates/oxidize-render/**'
+      - 'oxidize-render/**'
   pull_request:
     branches:
       - master
     paths:
-      - 'crates/oxidize-render/**'
+      - 'oxidize-render/**'
 
 jobs:
   build:
