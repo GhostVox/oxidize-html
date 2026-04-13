@@ -3,12 +3,12 @@ run-name: Oxidize HTML Engine CI
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'crates/oxidize-html-engine/**'
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - 'crates/oxidize-html-engine/**'
 

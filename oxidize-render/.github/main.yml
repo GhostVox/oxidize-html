@@ -2,12 +2,12 @@ name: Oxidize Render CI
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'crates/oxidize-render/**'
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - 'crates/oxidize-render/**'
 
