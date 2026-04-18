@@ -1,5 +1,5 @@
 use gpui::{Bounds, ParentElement, Pixels, Styled, div, img, px, rgb};
-use oxidize_html_engine::{DrawCommand, Rect};
+use oxidize_html::{DrawCommand, Rect};
 use std::path::PathBuf;
 pub fn command_element(command: &DrawCommand) -> gpui::Div {
     match command {
@@ -50,12 +50,12 @@ pub fn command_element(command: &DrawCommand) -> gpui::Div {
             .child(text.clone()),
         DrawCommand::DrawImagePlaceholder { rect } => abs_rect(*rect).bg(rgb(0xd1d5db)),
         DrawCommand::DrawImage { rect, source } => match source {
-            oxidize_html_engine::image::ImageSource::LocalPath(path) => abs_rect(*rect).child(
+            oxidize_html::image::ImageSource::LocalPath(path) => abs_rect(*rect).child(
                 img(PathBuf::from(path))
                     .w(px(rect.width.max(1.0)))
                     .h(px(rect.height.max(1.0))),
             ),
-            oxidize_html_engine::image::ImageSource::Remote(url) => abs_rect(*rect).child(
+            oxidize_html::image::ImageSource::Remote(url) => abs_rect(*rect).child(
                 img(url.clone())
                     .w(px(rect.width.max(1.0)))
                     .h(px(rect.height.max(1.0))),
@@ -151,6 +151,6 @@ pub fn content_extent(commands: &[DrawCommand]) -> (f32, f32) {
     (max_x.max(960.0), max_y.max(720.0))
 }
 
-fn to_gpui_color(color: oxidize_html_engine::Rgba) -> gpui::Rgba {
+fn to_gpui_color(color: oxidize_html::Rgba) -> gpui::Rgba {
     rgb(((color.r as u32) << 16) | ((color.g as u32) << 8) | color.b as u32)
 }
