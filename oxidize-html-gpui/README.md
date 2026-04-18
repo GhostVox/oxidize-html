@@ -11,9 +11,9 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-oxidize-html = {"0.1.0" }
-oxidize-render = { path = "../oxidize-render", features = ["gpui"] }
-gpui = {2.2.0 }
+oxidize-html = "0.1.0" 
+oxidize-html-gpui= { version="0.1.2", features = ["gpui"] }
+gpui = { version="2.2.0 "}
 ```
 
 Then in your GPUI component:
