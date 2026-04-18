@@ -1,0 +1,16 @@
+[package]
+name = "oxidize-html"
+version = "0.1.0"
+edition = "2024"
+description = "A backend-agnostic HTML parser, style engine, layout engine, and painter. Emits flat draw commands with no UI framework dependency."
+license = "MIT"
+repository = "https://github.com/ghostvox/oxidize-html"
+keywords = ["html", "layout", "renderer", "email", "parser"]
+categories = ["rendering", "parser-implementations", "text-processing"]
+readme = "README.md"
+
+[dependencies]
+base64 = "0.22.1"
+html5ever = "0.27"
+markup5ever_rcdom = "0.3"
+image = "0.25"
