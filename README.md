@@ -3,11 +3,12 @@
 A Rust workspace for parsing, styling, laying out, and rendering HTML — built for use in native GUI applications.
 
 [![crates.io](https://img.shields.io/crates/v/oxidize-html.svg)](https://crates.io/crates/oxidize-html)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/html-engine.yml?branch=master&label=oxidize-html&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/html-engine.yml)
 [![docs.rs](https://img.shields.io/docsrs/oxidize-html)](https://docs.rs/oxidize-html)
 [![crates.io](https://img.shields.io/crates/v/oxidize-html-gpui.svg)](https://crates.io/crates/oxidize-html-gpui)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-gpui&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
 [![docs.rs](https://img.shields.io/docsrs/oxidize-html-gpui)](https://docs.rs/oxidize-html-gpui)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 ## Crates
 
 | Crate | Description |
@@ -28,9 +29,7 @@ cargo run --bin gpui_demo -- test-email.html
 ```
 oxidize-html/
 ├── oxidize-html/   # Core engine (no UI dependencies)
-[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/html-engine.yml?branch=master&label=oxidize-html-engine&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/html-engine.yml)
 ├── oxidize-html-gpui/        # GPUI rendering glue
-[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-render&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
 └── oxidize-demo/          # Demo application
 ```
 

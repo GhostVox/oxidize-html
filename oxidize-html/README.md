@@ -1,6 +1,6 @@
 # oxidize-html
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/html-engine.yml?branch=master&label=oxidize-html-engine&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/html-engine.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/html-engine.yml?branch=master&label=oxidize-html&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/html-engine.yml)
 
 The core HTML rendering engine. Parses HTML, computes styles, performs layout, and emits draw commands. Has no dependency on any UI framework.
 

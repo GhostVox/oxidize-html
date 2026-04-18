@@ -181,7 +181,6 @@ pub struct Rect {
     /// The height of the rectangle.
     pub height: f32,
 }
-// trigger test
 impl Rect {
     /// Calculates the right edge of the rectangle.
     ///

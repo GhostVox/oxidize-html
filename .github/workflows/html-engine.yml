@@ -23,4 +23,4 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Run tests
-        run: cargo test -p oxidize-html-engine
+        run: cargo test -p oxidize-html

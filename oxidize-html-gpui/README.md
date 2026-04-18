@@ -1,5 +1,5 @@
 # oxidize-html-gpui
-[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-render&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-gpui&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
 
 
 
