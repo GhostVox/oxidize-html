@@ -444,6 +444,7 @@ fn layout_table_row(
     (children, row_height)
 }
 
+#[allow(dead_code)]
 fn shift_layout_x(node: &mut LayoutNode, delta: f32) {
     node.rect.x += delta;
     if let Some(mut bullet) = node.bullet_origin {
