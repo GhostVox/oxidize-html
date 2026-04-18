@@ -2,10 +2,11 @@
 name = "oxidize-demo"
 version = "0.1.0"
 edition = "2024"
+publish = false
 
 [dependencies]
-oxidize-html-engine = { path = "../oxidize-html-engine" }
-oxidize-render = { path = "../oxidize-render", features = ["gpui"] }
+oxidize-html = { path = "../oxidize-html", package="oxidize-html" }
+oxidize-html-gpui = { path = "../oxidize-html-gpui", features = ["gpui"] }
 gpui = { workspace = true }
 
 [feature]

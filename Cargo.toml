@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "oxidize-demo",
-    "oxidize-html-engine",
-    "oxidize-render",
+    "oxidize-html",
+    "oxidize-html-gpui",
 ]
 resolver = "2"
 

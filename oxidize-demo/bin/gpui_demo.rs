@@ -3,8 +3,8 @@ use gpui::{
     IntoElement, LayoutId, MouseUpEvent, Pixels, Render, Window, WindowBounds, WindowOptions, div,
     img, prelude::*, px, rgb, size,
 };
-use oxidize_html_engine::{DrawCommand, HtmlRenderer, Rect};
-use oxidize_render::gpui_renderer::{command_element, content_extent, to_bounds_with_offset};
+use oxidize_html::{DrawCommand, HtmlRenderer, Rect};
+use oxidize_html_gpui::gpui_renderer::{command_element, content_extent, to_bounds_with_offset};
 use std::{env, fs, path::PathBuf, sync::Arc};
 
 const DEFAULT_HTML: &str = r##"

@@ -2,6 +2,12 @@
 
 A Rust workspace for parsing, styling, laying out, and rendering HTML — built for use in native GUI applications.
 
+[![crates.io](https://img.shields.io/crates/v/oxidize-html.svg)](https://crates.io/crates/oxidize-html)
+[![docs.rs](https://img.shields.io/docsrs/oxidize-html)](https://docs.rs/oxidize-html)
+[![crates.io](https://img.shields.io/crates/v/oxidize-html-gpui.svg)](https://crates.io/crates/oxidize-html-gpui)
+[![docs.rs](https://img.shields.io/docsrs/oxidize-html-gpui)](https://docs.rs/oxidize-html-gpui)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## Crates
 
 | Crate | Description |
