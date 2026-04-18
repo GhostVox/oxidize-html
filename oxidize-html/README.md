@@ -1,4 +1,4 @@
-# oxidize-html-engine
+# oxidize-html
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/html-engine.yml?branch=master&label=oxidize-html-engine&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/html-engine.yml)
 
@@ -44,7 +44,7 @@ The `Vec<DrawCommand>` returned by `render_html` is a flat list of drawing instr
 - `DrawLine` — lines and borders
 - `Link` — hit rect for a hyperlink
 
-These commands are backend-agnostic. Use them with `oxidize-render` for GPUI, or implement your own renderer.
+These commands are backend-agnostic. Use them with `oxidize-html-gpui` for GPUI, or implement your own renderer.
 
 ## Supported HTML
 
@@ -66,5 +66,5 @@ These commands are backend-agnostic. Use them with `oxidize-render` for GPUI, or
 ## Running Tests
 
 ```sh
-cargo test -p oxidize-html-engine
+cargo test -p oxidize-html
 ```

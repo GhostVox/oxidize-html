@@ -1,4 +1,4 @@
-# oxidize-render
+# oxidize-html-gpui
 [![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-render&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
 
 
@@ -11,16 +11,16 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-oxidize-html-engine = { path = "../oxidize-html-engine" }
+oxidize-html = {"0.1.0" }
 oxidize-render = { path = "../oxidize-render", features = ["gpui"] }
-gpui = { git = "https://github.com/zed-industries/zed" }
+gpui = {2.2.0 }
 ```
 
 Then in your GPUI component:
 
 ```rust
-use oxidize_html_engine::HtmlRenderer;
-use oxidize_render::gpui_renderer::{command_element, content_extent};
+use oxidize_html::HtmlRenderer;
+use oxidize_html_gpui::gpui_renderer::{command_element, content_extent};
 use gpui::{div, px};
 
 let mut renderer = HtmlRenderer::default();
@@ -50,8 +50,8 @@ Converts an engine `Rect` to a GPUI `Bounds<Pixels>` with a scroll or origin off
 Example:
 
 ```rust
-use oxidize_html_engine::DrawCommand;
-use oxidize_render::gpui_renderer::to_bounds_with_offset;
+use oxidize_html::DrawCommand;
+use oxidize_html_gpui::gpui_renderer::to_bounds_with_offset;
 use gpui::Bounds;
 
 // inside Element::paint, where `bounds: Bounds` is available:

@@ -12,8 +12,8 @@ A Rust workspace for parsing, styling, laying out, and rendering HTML — built 
 
 | Crate | Description |
 |-------|-------------|
-| `oxidize-html-engine` | Core HTML parser, style engine, layout engine, and painter |
-| `oxidize-render` | GPUI rendering backend — translates draw commands into GPUI elements |
+| `oxidize-html` | Core HTML parser, style engine, layout engine, and painter |
+| `oxidize-html-gpui` | GPUI rendering backend — translates draw commands into GPUI elements |
 | `oxidize-demo` | Interactive demo app built with GPUI for testing and development |
 
 ## Quick Start
@@ -27,8 +27,10 @@ cargo run --bin gpui_demo -- test-email.html
 
 ```
 oxidize-html/
-├── oxidize-html-engine/   # Core engine (no UI dependencies)
-├── oxidize-render/        # GPUI rendering glue
+├── oxidize-html/   # Core engine (no UI dependencies)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/html-engine.yml?branch=master&label=oxidize-html-engine&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/html-engine.yml)
+├── oxidize-html-gpui/        # GPUI rendering glue
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghostvox/oxidize-html/render.yml?branch=master&label=oxidize-html-render&logo=rust)](https://github.com/ghostvox/oxidize-html/actions/workflows/render.yml)
 └── oxidize-demo/          # Demo application
 ```
 
