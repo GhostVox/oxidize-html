@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths:
-      - 'oxidize-html-engine/**'
+      - 'oxidize-html/**'
   pull_request:
     branches:
       - master
     paths:
-      - 'oxidize-html-engine/**'
+      - 'oxidize-html/**'
 
 jobs:
   test:

@@ -3602,8 +3602,8 @@ name = "oxidize-demo"
 version = "0.1.0"
 dependencies = [
  "gpui",
- "oxidize-html 0.1.0",
- "oxidize-html-gpui",
+ "oxidize-html 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "oxidize-html-gpui 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -3630,7 +3630,17 @@ dependencies = [
 
 [[package]]
 name = "oxidize-html-gpui"
-version = "0.1.0"
+version = "0.1.2"
+dependencies = [
+ "gpui",
+ "oxidize-html 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "oxidize-html-gpui"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09fa055192b03f8a065b702ea73ca82b0919e7b0c65886baa8c007842730753f"
 dependencies = [
  "gpui",
  "oxidize-html 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",

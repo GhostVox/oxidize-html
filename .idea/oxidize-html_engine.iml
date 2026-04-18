@@ -6,9 +6,13 @@
       <sourceFolder url="file://$MODULE_DIR$/oxidize-html-engine/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/oxidize-render/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/oxidize-html-gpui/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/oxidize-html/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/oxidize-html-engine/target" />
       <excludeFolder url="file://$MODULE_DIR$/oxidize-render/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/oxidize-html-gpui/target" />
+      <excludeFolder url="file://$MODULE_DIR$/oxidize-html/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

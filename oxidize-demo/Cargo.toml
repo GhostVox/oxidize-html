@@ -5,8 +5,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-oxidize-html = { path = "../oxidize-html", package="oxidize-html" }
-oxidize-html-gpui = { path = "../oxidize-html-gpui", features = ["gpui"] }
+oxidize-html = " 0.1.0"
+oxidize-html-gpui = { version="0.1.2", features = ["gpui"] }
 gpui = { workspace = true }
 
 [feature]
