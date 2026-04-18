@@ -1,0 +1,17 @@
+[package]
+name = "oxidize-html-gpui"
+version = "0.1.0"
+edition = "2024"
+description = "GPUI rendering backend for oxidize-html. Translates DrawCommands into GPUI elements."
+license = "MIT"
+repository = "https://github.com/ghostvox/oxidize-html"
+keywords = ["html", "gpui", "renderer", "zed", "gui"]
+categories = ["rendering", "gui"]
+readme = "README.md"
+
+[dependencies]
+oxidize-html = { version = "0.1.0" }
+gpui = { version = "0.2.2", optional = true }
+
+[features]
+gpui = ["dep:gpui"]
