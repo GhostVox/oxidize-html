@@ -1,6 +1,6 @@
 [package]
 name = "oxidize-html"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A backend-agnostic HTML parser, style engine, layout engine, and painter. Emits flat draw commands with no UI framework dependency."
 license = "MIT"
